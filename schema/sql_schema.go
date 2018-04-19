@@ -8,7 +8,12 @@ import (
 // SQLSchemaBuilder queries the database schema and builds it into a readable struct,
 // allows GraphqlSchemaBuilder build a barebone Graphql schema from database structure.
 type SQLSchemaBuilder interface {
+	// QueryTables should only returns a slice of SQLTableStruct without the Fields.
+	// The fields will be appended in the main builder function.
 	QueryTables(db *sql.DB) ([]SQLTableStruct, error)
+
+	// QueryFields should map the table description from database to a slice of
+	// SQLFieldStruct.
 	QueryFields(db *sql.DB, tableName string) ([]SQLFieldStruct, error)
 }
 
@@ -16,7 +21,7 @@ type SQLSchemaBuilder interface {
 type SQLFieldStruct struct {
 	Field string
 	Type  string
-	Null  string
+	Null  bool
 }
 
 // SQLTableStruct describes a table in database.

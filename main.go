@@ -2,10 +2,12 @@ package main
 
 import (
 	"database/sql"
-	"fmt"
 	"log"
 
+	"github.com/davecgh/go-spew/spew"
+
 	_ "github.com/go-sql-driver/mysql"
+	"github.com/suppayami/goql/schema"
 )
 
 func main() {
@@ -15,19 +17,9 @@ func main() {
 	}
 	defer db.Close()
 
-	rows, err := db.Query("SHOW TABLES")
+	schema, err := schema.BuildSQLSchema(db, schema.GetBuilder("mysql"), "employees")
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer rows.Close()
-	for rows.Next() {
-		var table string
-		if err := rows.Scan(&table); err != nil {
-			log.Fatal(err)
-		}
-		fmt.Printf("Table: %s \n", table)
-	}
-	if err := rows.Err(); err != nil {
-		log.Fatal(err)
-	}
+	spew.Dump(schema)
 }
