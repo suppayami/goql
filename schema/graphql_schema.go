@@ -16,6 +16,24 @@ const (
 	ScalarID      ScalarType = "ID"
 )
 
+// GraphqlKeyword is used for Graphql language
+type GraphqlKeyword string
+
+// Graphql Keyword
+const (
+	KeywordInterface GraphqlKeyword = "interface"
+	KeywordInput     GraphqlKeyword = "input"
+	KeywordSchema    GraphqlKeyword = "schema"
+	KeywordQuery     GraphqlKeyword = "Query"
+	KeywordMutation  GraphqlKeyword = "Mutation"
+
+	KeywordArray       GraphqlKeyword = "[%s]"
+	KeywordNonNullable GraphqlKeyword = "%s!"
+
+	KeywordField          GraphqlKeyword = "%s: %s"
+	KeywordFieldArguments GraphqlKeyword = "%s(%s): %s"
+)
+
 // GraphqlSchemaBuilder pipes DBSchema into a barebone GraphqlSchema.
 type GraphqlSchemaBuilder interface{}
 
