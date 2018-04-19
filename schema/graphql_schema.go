@@ -38,6 +38,7 @@ const (
 type GraphqlSchemaBuilder interface{}
 
 // ConvertTypeSQLToGraphql converts SQL type to Graphql type
+// TODO: different db has different types
 func ConvertTypeSQLToGraphql(sqlType string) ScalarType {
 	typeLower := strings.ToLower(sqlType)
 	if strings.Contains(typeLower, "int") {
@@ -55,9 +56,6 @@ func ConvertTypeSQLToGraphql(sqlType string) ScalarType {
 
 // IsIDField checks if given SQL field is an ID field
 func IsIDField(sqlField SQLFieldStruct) bool {
-	if len(sqlField.Key) > 0 {
-		return true
-	}
 	lowerField := strings.ToLower(sqlField.Field)
 	if strings.HasSuffix(sqlField.Field, "ID") ||
 		strings.HasSuffix(lowerField, "_id") {
