@@ -7,8 +7,8 @@ import (
 	"github.com/suppayami/goql/schema"
 )
 
-func TestGraphqlFieldStringer(t *testing.T) {
-	gqlField := schema.GraphqlField{
+var (
+	gqlHeroField = schema.GraphqlField{
 		Name:       "hero",
 		Type:       schema.ObjectType,
 		ObjectType: "Character",
@@ -24,9 +24,36 @@ func TestGraphqlFieldStringer(t *testing.T) {
 		},
 	}
 
+	gqlHumanType = schema.GraphqlObjectType{
+		Name: "Human",
+		Fields: []schema.GraphqlField{
+			schema.GraphqlField{
+				Name:     "id",
+				Type:     schema.ScalarID,
+				Nullable: false,
+			},
+
+			schema.GraphqlField{
+				Name:     "name",
+				Type:     schema.ScalarString,
+				Nullable: false,
+			},
+		},
+	}
+)
+
+func TestGraphqlFieldStringer(t *testing.T) {
 	expected := "hero(episode: Episode = NEWHOPE): Character"
 
-	if gqlField.String() != expected {
-		t.Fatal(fmt.Sprintf("Expected: \n%s\nGot:\n%s\n", expected, gqlField.String()))
+	if gqlHeroField.String() != expected {
+		t.Fatal(fmt.Sprintf("Expected: \n%s\nGot:\n%s\n", expected, gqlHeroField.String()))
+	}
+}
+
+func TestGraphqlObjectTypeStringer(t *testing.T) {
+	expected := "type Human {\n\tid: ID!\n\tname: String!\n}"
+
+	if gqlHumanType.String() != expected {
+		t.Fatal(fmt.Sprintf("Expected: \n%s\nGot:\n%s\n", expected, gqlHumanType.String()))
 	}
 }

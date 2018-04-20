@@ -108,6 +108,14 @@ type GraphqlObjectType struct {
 	Fields []GraphqlField
 }
 
+func (gql GraphqlObjectType) String() string {
+	fields := make([]string, 0, len(gql.Fields))
+	for _, field := range gql.Fields {
+		fields = append(fields, fmt.Sprintf("\t%s", field.String()))
+	}
+	return fmt.Sprintf("%s %s {\n%s\n}", KeywordType, gql.Name, strings.Join(fields, "\n"))
+}
+
 // ConvertTypeSQLToGraphql converts SQL type to Graphql type
 // TODO: different db has different types
 func ConvertTypeSQLToGraphql(sqlType string) GraphqlType {
