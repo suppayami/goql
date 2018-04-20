@@ -44,6 +44,7 @@ type GraphqlField struct {
 	Type       GraphqlType
 	ObjectType string
 	Nullable   bool
+	IsArray    bool
 	Arguments  []GraphqlArgument
 }
 
@@ -54,6 +55,10 @@ func (gql GraphqlField) String() string {
 		keywordFieldType = gql.ObjectType
 	} else {
 		keywordFieldType = string(gql.Type)
+	}
+
+	if gql.IsArray {
+		keywordFieldType = fmt.Sprintf(KeywordArray, keywordFieldType)
 	}
 
 	if !gql.Nullable {
