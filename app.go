@@ -1,4 +1,4 @@
-package app
+package main
 
 import (
 	"database/sql"
@@ -10,7 +10,7 @@ import (
 )
 
 // StartApp starts shit
-func StartApp(db *sql.DB, addr string) {
+func startApp(db *sql.DB, addr string) {
 	graphiql, err := getGraphiQLTemplate("./graphiql.html")
 	if err != nil {
 		log.Fatal(err)
