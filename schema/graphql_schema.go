@@ -143,7 +143,10 @@ func SQLToGraphqlSchema(sqlSchema SQLSchemaStruct) (GraphqlSchema, error) {
 	}
 
 	for _, sqlTable := range sqlSchema.Tables {
-		objectType := sqlToGraphqlObjectType(*sqlTable)
+		if sqlTable.IsManyToMany {
+			continue
+		}
+		objectType := sqlToGraphqlObjectType(sqlTable)
 		schema.ObjectTypes = append(schema.ObjectTypes, objectType)
 	}
 
@@ -167,7 +170,7 @@ func sqlToGraphqlType(sqlType string) GraphqlType {
 	return ScalarString
 }
 
-func sqlToGraphqlObjectType(sqlTable SQLTableStruct) GraphqlObjectType {
+func sqlToGraphqlObjectType(sqlTable *SQLTableStruct) GraphqlObjectType {
 	objectType := GraphqlObjectType{
 		Name:   strcase.ToCamel(sqlTable.Name),
 		Fields: []GraphqlField{},
@@ -191,14 +194,30 @@ func sqlToGraphqlObjectType(sqlTable SQLTableStruct) GraphqlObjectType {
 	}
 
 	for _, sqlRelationship := range sqlTable.Relationships {
-		field := GraphqlField{
-			Name:       strcase.ToLowerCamel(sqlRelationship.Table.Name),
-			Type:       ObjectType,
-			ObjectType: strcase.ToCamel(sqlRelationship.Table.Name),
-			IsArray:    sqlRelationship.HasMany,
-			Nullable:   sqlRelationship.Null,
+		if !sqlRelationship.Table.IsManyToMany {
+			field := GraphqlField{
+				Name:       strcase.ToLowerCamel(sqlRelationship.Table.Name),
+				Type:       ObjectType,
+				ObjectType: strcase.ToCamel(sqlRelationship.Table.Name),
+				IsArray:    sqlRelationship.HasMany,
+				Nullable:   sqlRelationship.Null,
+			}
+			objectType.Fields = append(objectType.Fields, field)
+			continue
 		}
-		objectType.Fields = append(objectType.Fields, field)
+		for _, manyToMany := range sqlRelationship.Table.Relationships {
+			if manyToMany.Table == sqlTable {
+				continue
+			}
+			field := GraphqlField{
+				Name:       strcase.ToLowerCamel(manyToMany.Table.Name),
+				Type:       ObjectType,
+				ObjectType: strcase.ToCamel(manyToMany.Table.Name),
+				IsArray:    true,
+				Nullable:   true,
+			}
+			objectType.Fields = append(objectType.Fields, field)
+		}
 	}
 
 	return objectType

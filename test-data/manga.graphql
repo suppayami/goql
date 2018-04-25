@@ -1,0 +1,19 @@
+type Author {
+	authorId: ID!
+	name: String!
+	country: String!
+	manga: [Manga]
+}
+
+type Category {
+	categoryId: ID!
+	name: String!
+	manga: [Manga]
+}
+
+type Manga {
+	mangaId: ID!
+	name: String!
+	author: Author!
+	category: [Category]
+}

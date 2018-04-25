@@ -32,6 +32,7 @@ type SQLTableStruct struct {
 	Name          string
 	Fields        []*SQLFieldStruct
 	Relationships []*SQLRelationshipStruct
+	IsManyToMany  bool
 }
 
 // SQLRelationshipStruct describes a relationship between tables.
@@ -74,6 +75,7 @@ func BuildSQLSchema(db *sql.DB, builder SQLSchemaBuilder) (SQLSchemaStruct, erro
 		}
 		table.Fields = fields
 		table.Relationships = getRelationships(tables, table)
+		table.IsManyToMany = isManyToManyTable(table)
 		schema.Tables = append(schema.Tables, table)
 	}
 	return schema, nil
@@ -101,6 +103,8 @@ func getRelationships(tableList []*SQLTableStruct, table *SQLTableStruct) []*SQL
 				LocalKey:   field.Field,
 				Null:       field.Null,
 			}
+			relationships = append(relationships, &relForeign)
+			// FIXME: Shouldn't have side effect in a get function
 			relLocal := SQLRelationshipStruct{
 				Table:      table,
 				ForeignKey: field.Field,
@@ -108,10 +112,21 @@ func getRelationships(tableList []*SQLTableStruct, table *SQLTableStruct) []*SQL
 				HasMany:    true,
 				Null:       true,
 			}
-			relationships = append(relationships, &relForeign)
 			foundTable.Relationships = append(foundTable.Relationships, &relLocal)
 			field.IsForeignKey = true
 		}
 	}
 	return relationships
+}
+
+func isManyToManyTable(table *SQLTableStruct) bool {
+	if len(table.Relationships) < 2 {
+		return false
+	}
+	for _, field := range table.Fields {
+		if strings.EqualFold(field.Field, fmt.Sprintf("%s_id", table.Name)) {
+			return false
+		}
+	}
+	return true
 }
