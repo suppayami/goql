@@ -3,6 +3,8 @@ package schema
 import (
 	"fmt"
 	"strings"
+
+	"github.com/iancoleman/strcase"
 )
 
 // GraphqlType is a type in GraphQL
@@ -167,13 +169,13 @@ func sqlToGraphqlType(sqlType string) GraphqlType {
 
 func sqlToGraphqlObjectType(sqlTable SQLTableStruct) GraphqlObjectType {
 	objectType := GraphqlObjectType{
-		Name:   sqlTable.Name,
+		Name:   strcase.ToCamel(sqlTable.Name),
 		Fields: []GraphqlField{},
 	}
 
 	for _, sqlField := range sqlTable.Fields {
 		field := GraphqlField{
-			Name:     sqlField.Field,
+			Name:     strcase.ToLowerCamel(sqlField.Field),
 			Type:     sqlToGraphqlType(sqlField.Type),
 			IsArray:  false,
 			Nullable: sqlField.Null,

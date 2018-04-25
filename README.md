@@ -1,4 +1,4 @@
 # goql
 
 ## Test Database
-https://github.com/datacharmer/test_db
+https://dev.mysql.com/doc/sakila/en/sakila-introduction.html
