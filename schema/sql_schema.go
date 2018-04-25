@@ -119,6 +119,7 @@ func getRelationships(tableList []*SQLTableStruct, table *SQLTableStruct) []*SQL
 	return relationships
 }
 
+// TODO: Many-to-many relationship should be checked by some conventions
 func isManyToManyTable(table *SQLTableStruct) bool {
 	if len(table.Relationships) < 2 {
 		return false
