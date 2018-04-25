@@ -74,7 +74,7 @@ func BuildSQLSchema(db *sql.DB, builder SQLSchemaBuilder) (SQLSchemaStruct, erro
 			return schema, err
 		}
 		table.Fields = fields
-		table.Relationships = getRelationships(tables, table)
+		setupRelationships(tables, table)
 		table.IsManyToMany = isManyToManyTable(table)
 		schema.Tables = append(schema.Tables, table)
 	}
@@ -83,9 +83,9 @@ func BuildSQLSchema(db *sql.DB, builder SQLSchemaBuilder) (SQLSchemaStruct, erro
 
 // TODO: Relationship Key should be configurable
 // TODO: LocalKey should be configuration, for now it's the same as ForeignKey
-func getRelationships(tableList []*SQLTableStruct, table *SQLTableStruct) []*SQLRelationshipStruct {
-	relationships := []*SQLRelationshipStruct{}
-	for _, field := range table.Fields {
+func setupRelationships(tableList []*SQLTableStruct, table *SQLTableStruct) {
+	for i := range table.Fields {
+		field := table.Fields[i]
 		if !strings.HasSuffix(field.Field, "_id") {
 			continue
 		}
@@ -93,7 +93,8 @@ func getRelationships(tableList []*SQLTableStruct, table *SQLTableStruct) []*SQL
 		if strings.EqualFold(table.Name, modelName) {
 			continue
 		}
-		for _, foundTable := range tableList {
+		for j := range tableList {
+			foundTable := tableList[j]
 			if !strings.EqualFold(foundTable.Name, modelName) {
 				continue
 			}
@@ -103,8 +104,7 @@ func getRelationships(tableList []*SQLTableStruct, table *SQLTableStruct) []*SQL
 				LocalKey:   field.Field,
 				Null:       field.Null,
 			}
-			relationships = append(relationships, &relForeign)
-			// FIXME: Shouldn't have side effect in a get function
+			table.Relationships = append(table.Relationships, &relForeign)
 			relLocal := SQLRelationshipStruct{
 				Table:      table,
 				ForeignKey: field.Field,
@@ -116,7 +116,6 @@ func getRelationships(tableList []*SQLTableStruct, table *SQLTableStruct) []*SQL
 			field.IsForeignKey = true
 		}
 	}
-	return relationships
 }
 
 // TODO: Many-to-many relationship should be checked by some conventions
