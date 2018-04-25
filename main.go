@@ -2,9 +2,8 @@ package main
 
 import (
 	"database/sql"
+	"fmt"
 	"log"
-
-	"github.com/davecgh/go-spew/spew"
 
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/suppayami/goql/schema"
@@ -17,9 +16,10 @@ func main() {
 	}
 	defer db.Close()
 
-	schema, err := schema.BuildSQLSchema(db, schema.GetBuilder("mysql"), "employees")
+	sqlSchema, err := schema.BuildSQLSchema(db, schema.GetBuilder("mysql"))
 	if err != nil {
 		log.Fatal(err)
 	}
-	spew.Dump(schema)
+	graphqlSchema, err := schema.SQLToGraphqlSchema(sqlSchema)
+	fmt.Println(graphqlSchema.String())
 }

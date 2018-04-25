@@ -121,9 +121,36 @@ func (gql GraphqlObjectType) String() string {
 	return fmt.Sprintf("%s %s {\n%s\n}", KeywordType, gql.Name, strings.Join(fields, "\n"))
 }
 
+// GraphqlSchema describes Graphql schema
+type GraphqlSchema struct {
+	ObjectTypes []GraphqlObjectType
+}
+
+func (gql GraphqlSchema) String() string {
+	objectTypes := make([]string, 0, len(gql.ObjectTypes))
+	for _, objectType := range gql.ObjectTypes {
+		objectTypes = append(objectTypes, fmt.Sprintf("%s", objectType.String()))
+	}
+	return strings.Join(objectTypes, "\n\n")
+}
+
+// SQLToGraphqlSchema converts SQL Schema to Graphql Schema
+func SQLToGraphqlSchema(sqlSchema SQLSchemaStruct) (GraphqlSchema, error) {
+	schema := GraphqlSchema{
+		ObjectTypes: []GraphqlObjectType{},
+	}
+
+	for _, sqlTable := range sqlSchema.Tables {
+		objectType := sqlToGraphqlObjectType(sqlTable)
+		schema.ObjectTypes = append(schema.ObjectTypes, objectType)
+	}
+
+	return schema, nil
+}
+
 // ConvertTypeSQLToGraphql converts SQL type to Graphql type
 // TODO: different db has different types
-func ConvertTypeSQLToGraphql(sqlType string) GraphqlType {
+func sqlToGraphqlType(sqlType string) GraphqlType {
 	typeLower := strings.ToLower(sqlType)
 	if strings.Contains(typeLower, "int") {
 		return ScalarInt
@@ -138,17 +165,21 @@ func ConvertTypeSQLToGraphql(sqlType string) GraphqlType {
 	return ScalarString
 }
 
-// IsIDField checks if given SQL field is an ID field
-func IsIDField(sqlField SQLFieldStruct) bool {
-	lowerField := strings.ToLower(sqlField.Field)
-	if strings.HasSuffix(sqlField.Field, "ID") ||
-		strings.HasSuffix(lowerField, "_id") {
-		return true
+func sqlToGraphqlObjectType(sqlTable SQLTableStruct) GraphqlObjectType {
+	objectType := GraphqlObjectType{
+		Name:   sqlTable.Name,
+		Fields: []GraphqlField{},
 	}
-	return false
-}
 
-// ConvertFieldSQLtoGraphql converts an SQL field into a Graphql field
-func ConvertFieldSQLtoGraphql(sqlField SQLFieldStruct) error {
-	return nil
+	for _, sqlField := range sqlTable.Fields {
+		field := GraphqlField{
+			Name:     sqlField.Field,
+			Type:     sqlToGraphqlType(sqlField.Type),
+			IsArray:  false,
+			Nullable: sqlField.Null,
+		}
+		objectType.Fields = append(objectType.Fields, field)
+	}
+
+	return objectType
 }

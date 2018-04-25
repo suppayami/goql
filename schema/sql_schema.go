@@ -32,7 +32,6 @@ type SQLTableStruct struct {
 
 // SQLSchemaStruct describes database schema.
 type SQLSchemaStruct struct {
-	Name   string
 	Tables []SQLTableStruct
 }
 
@@ -47,9 +46,8 @@ func GetBuilder(driver string) SQLSchemaBuilder {
 }
 
 // BuildSQLSchema builds a SQL Schema from given connecting database
-func BuildSQLSchema(db *sql.DB, builder SQLSchemaBuilder, dbName string) (SQLSchemaStruct, error) {
+func BuildSQLSchema(db *sql.DB, builder SQLSchemaBuilder) (SQLSchemaStruct, error) {
 	schema := SQLSchemaStruct{
-		Name:   dbName,
 		Tables: nil,
 	}
 	tables, err := builder.QueryTables(db)
