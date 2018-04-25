@@ -143,7 +143,7 @@ func SQLToGraphqlSchema(sqlSchema SQLSchemaStruct) (GraphqlSchema, error) {
 	}
 
 	for _, sqlTable := range sqlSchema.Tables {
-		objectType := sqlToGraphqlObjectType(sqlTable)
+		objectType := sqlToGraphqlObjectType(*sqlTable)
 		schema.ObjectTypes = append(schema.ObjectTypes, objectType)
 	}
 
@@ -174,11 +174,29 @@ func sqlToGraphqlObjectType(sqlTable SQLTableStruct) GraphqlObjectType {
 	}
 
 	for _, sqlField := range sqlTable.Fields {
+		gqlType := sqlToGraphqlType(sqlField.Type)
+		if sqlField.IsForeignKey {
+			continue
+		}
+		if sqlField.IsPrimaryKey {
+			gqlType = ScalarID
+		}
 		field := GraphqlField{
 			Name:     strcase.ToLowerCamel(sqlField.Field),
-			Type:     sqlToGraphqlType(sqlField.Type),
+			Type:     gqlType,
 			IsArray:  false,
 			Nullable: sqlField.Null,
+		}
+		objectType.Fields = append(objectType.Fields, field)
+	}
+
+	for _, sqlRelationship := range sqlTable.Relationships {
+		field := GraphqlField{
+			Name:       strcase.ToLowerCamel(sqlRelationship.Table.Name),
+			Type:       ObjectType,
+			ObjectType: strcase.ToCamel(sqlRelationship.Table.Name),
+			IsArray:    sqlRelationship.HasMany,
+			Nullable:   sqlRelationship.Null,
 		}
 		objectType.Fields = append(objectType.Fields, field)
 	}

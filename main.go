@@ -20,6 +20,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	// spew.Dump(sqlSchema)
 	graphqlSchema, err := schema.SQLToGraphqlSchema(sqlSchema)
 	fmt.Println(graphqlSchema.String())
 }

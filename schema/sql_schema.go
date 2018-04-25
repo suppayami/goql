@@ -3,6 +3,7 @@ package schema
 import (
 	"database/sql"
 	"fmt"
+	"strings"
 )
 
 // SQLSchemaBuilder queries the database schema and builds it into a readable struct,
@@ -10,29 +11,41 @@ import (
 type SQLSchemaBuilder interface {
 	// QueryTables should only returns a slice of SQLTableStruct without the Fields.
 	// The fields will be appended in the main builder function.
-	QueryTables(db *sql.DB) ([]SQLTableStruct, error)
+	QueryTables(db *sql.DB) ([]*SQLTableStruct, error)
 
 	// QueryFields should map the table description from database to a slice of
 	// SQLFieldStruct.
-	QueryFields(db *sql.DB, tableName string) ([]SQLFieldStruct, error)
+	QueryFields(db *sql.DB, tableName string) ([]*SQLFieldStruct, error)
 }
 
 // SQLFieldStruct describes a field in table of database.
 type SQLFieldStruct struct {
-	Field string
-	Type  string
-	Null  bool
+	Field        string
+	Type         string
+	Null         bool
+	IsPrimaryKey bool
+	IsForeignKey bool
 }
 
 // SQLTableStruct describes a table in database.
 type SQLTableStruct struct {
-	Name   string
-	Fields []SQLFieldStruct
+	Name          string
+	Fields        []*SQLFieldStruct
+	Relationships []*SQLRelationshipStruct
+}
+
+// SQLRelationshipStruct describes a relationship between tables.
+type SQLRelationshipStruct struct {
+	Table      *SQLTableStruct
+	ForeignKey string
+	LocalKey   string
+	Null       bool
+	HasMany    bool
 }
 
 // SQLSchemaStruct describes database schema.
 type SQLSchemaStruct struct {
-	Tables []SQLTableStruct
+	Tables []*SQLTableStruct
 }
 
 // GetBuilder switches SQL driver to a SQLSchemaBuilder
@@ -48,7 +61,7 @@ func GetBuilder(driver string) SQLSchemaBuilder {
 // BuildSQLSchema builds a SQL Schema from given connecting database
 func BuildSQLSchema(db *sql.DB, builder SQLSchemaBuilder) (SQLSchemaStruct, error) {
 	schema := SQLSchemaStruct{
-		Tables: nil,
+		Tables: []*SQLTableStruct{},
 	}
 	tables, err := builder.QueryTables(db)
 	if err != nil {
@@ -60,7 +73,45 @@ func BuildSQLSchema(db *sql.DB, builder SQLSchemaBuilder) (SQLSchemaStruct, erro
 			return schema, err
 		}
 		table.Fields = fields
+		table.Relationships = getRelationships(tables, table)
 		schema.Tables = append(schema.Tables, table)
 	}
 	return schema, nil
+}
+
+// TODO: Relationship Key should be configurable
+// TODO: LocalKey should be configuration, for now it's the same as ForeignKey
+func getRelationships(tableList []*SQLTableStruct, table *SQLTableStruct) []*SQLRelationshipStruct {
+	relationships := []*SQLRelationshipStruct{}
+	for _, field := range table.Fields {
+		if !strings.HasSuffix(field.Field, "_id") {
+			continue
+		}
+		modelName := strings.TrimSuffix(field.Field, "_id")
+		if strings.EqualFold(table.Name, modelName) {
+			continue
+		}
+		for _, foundTable := range tableList {
+			if !strings.EqualFold(foundTable.Name, modelName) {
+				continue
+			}
+			relForeign := SQLRelationshipStruct{
+				Table:      foundTable,
+				ForeignKey: field.Field,
+				LocalKey:   field.Field,
+				Null:       field.Null,
+			}
+			relLocal := SQLRelationshipStruct{
+				Table:      table,
+				ForeignKey: field.Field,
+				LocalKey:   field.Field,
+				HasMany:    true,
+				Null:       true,
+			}
+			relationships = append(relationships, &relForeign)
+			foundTable.Relationships = append(foundTable.Relationships, &relLocal)
+			field.IsForeignKey = true
+		}
+	}
+	return relationships
 }

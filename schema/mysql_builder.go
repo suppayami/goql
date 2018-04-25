@@ -19,8 +19,8 @@ type mySQLField struct {
 }
 
 // QueryTables implementation
-func (builder MySQLSchemaBuilder) QueryTables(db *sql.DB) ([]SQLTableStruct, error) {
-	tables := []SQLTableStruct{}
+func (builder MySQLSchemaBuilder) QueryTables(db *sql.DB) ([]*SQLTableStruct, error) {
+	tables := []*SQLTableStruct{}
 	rows, err := db.Query("SHOW TABLES")
 	if err != nil {
 		return tables, err
@@ -32,10 +32,11 @@ func (builder MySQLSchemaBuilder) QueryTables(db *sql.DB) ([]SQLTableStruct, err
 			return tables, err
 		}
 		table := SQLTableStruct{
-			Name:   tableName,
-			Fields: []SQLFieldStruct{},
+			Name:          tableName,
+			Fields:        []*SQLFieldStruct{},
+			Relationships: []*SQLRelationshipStruct{},
 		}
-		tables = append(tables, table)
+		tables = append(tables, &table)
 	}
 	if err := rows.Err(); err != nil {
 		return tables, err
@@ -44,8 +45,8 @@ func (builder MySQLSchemaBuilder) QueryTables(db *sql.DB) ([]SQLTableStruct, err
 }
 
 // QueryFields implementation
-func (builder MySQLSchemaBuilder) QueryFields(db *sql.DB, tableName string) ([]SQLFieldStruct, error) {
-	fields := []SQLFieldStruct{}
+func (builder MySQLSchemaBuilder) QueryFields(db *sql.DB, tableName string) ([]*SQLFieldStruct, error) {
+	fields := []*SQLFieldStruct{}
 	rows, err := db.Query(fmt.Sprintf("DESCRIBE %s", tableName))
 	if err != nil {
 		return fields, err
@@ -65,11 +66,12 @@ func (builder MySQLSchemaBuilder) QueryFields(db *sql.DB, tableName string) ([]S
 			return fields, err
 		}
 		field := SQLFieldStruct{
-			Field: fieldStruct.Field,
-			Null:  strings.EqualFold(fieldStruct.Null, "yes"),
-			Type:  fieldStruct.Type,
+			Field:        fieldStruct.Field,
+			Null:         strings.EqualFold(fieldStruct.Null, "yes"),
+			Type:         fieldStruct.Type,
+			IsPrimaryKey: strings.EqualFold(fieldStruct.Key, "PRI"),
 		}
-		fields = append(fields, field)
+		fields = append(fields, &field)
 	}
 	if err := rows.Err(); err != nil {
 		return fields, err
