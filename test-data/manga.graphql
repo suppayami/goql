@@ -1,19 +1,28 @@
+type Query {
+	authors(first: Int, offset: Int): [Author]
+	author(author_id: ID!): Author
+	categories(first: Int, offset: Int): [Category]
+	category(category_id: ID!): Category
+	mangas(first: Int, offset: Int): [Manga]
+	manga(manga_id: ID!): Manga
+}
+
 type Author {
 	authorId: ID!
 	name: String!
 	country: String!
-	manga: [Manga]
+	mangas: [Manga]
 }
 
 type Category {
 	categoryId: ID!
 	name: String!
-	manga: [Manga]
+	mangas: [Manga]
 }
 
 type Manga {
 	mangaId: ID!
 	name: String!
 	author: Author!
-	category: [Category]
+	categories: [Category]
 }

@@ -101,7 +101,11 @@ func (gql GraphqlArgument) String() string {
 	}
 
 	if len(gql.DefaultValue) > 0 {
-		return fmt.Sprintf(KeywordFieldDefaultValue, gql.Name, keywordFieldType, gql.DefaultValue)
+		defaultValue := gql.DefaultValue
+		if gql.Type == ScalarString {
+			defaultValue = fmt.Sprintf("\"%s\"", defaultValue)
+		}
+		return fmt.Sprintf(KeywordFieldDefaultValue, gql.Name, keywordFieldType, defaultValue)
 	}
 
 	if !gql.Nullable {
@@ -134,8 +138,9 @@ type GraphqlSchema struct {
 
 func (gql GraphqlSchema) String() string {
 	objectTypes := make([]string, 0, len(gql.ObjectTypes))
+	objectTypes = append(objectTypes, gql.QueryType.String())
 	for _, objectType := range gql.ObjectTypes {
-		objectTypes = append(objectTypes, fmt.Sprintf("%s", objectType.String()))
+		objectTypes = append(objectTypes, objectType.String())
 	}
 	return strings.Join(objectTypes, "\n\n")
 }
@@ -143,6 +148,14 @@ func (gql GraphqlSchema) String() string {
 // SQLToGraphqlSchema converts SQL Schema to Graphql Schema
 func SQLToGraphqlSchema(sqlSchema SQLSchemaStruct) (GraphqlSchema, error) {
 	schema := GraphqlSchema{
+		QueryType: GraphqlObjectType{
+			Name:   "Query",
+			Fields: []GraphqlField{},
+		},
+		MutationType: GraphqlObjectType{
+			Name:   "Muation",
+			Fields: []GraphqlField{},
+		},
 		ObjectTypes: []GraphqlObjectType{},
 	}
 
@@ -151,7 +164,11 @@ func SQLToGraphqlSchema(sqlSchema SQLSchemaStruct) (GraphqlSchema, error) {
 			continue
 		}
 		objectType := sqlToGraphqlObjectType(sqlTable)
+		queryFields := sqlToGraphqlQueryFields(sqlTable)
 		schema.ObjectTypes = append(schema.ObjectTypes, objectType)
+		for _, queryField := range queryFields {
+			schema.QueryType.Fields = append(schema.QueryType.Fields, queryField)
+		}
 	}
 
 	return schema, nil
@@ -228,4 +245,43 @@ func sqlToGraphqlObjectType(sqlTable *SQLTableStruct) GraphqlObjectType {
 	}
 
 	return objectType
+}
+
+func sqlToGraphqlQueryFields(sqlTable *SQLTableStruct) []GraphqlField {
+	queryFields := []GraphqlField{}
+	queryFields = append(queryFields, GraphqlField{
+		Name:       inflection.Plural(strcase.ToLowerCamel(sqlTable.Name)),
+		Type:       ObjectType,
+		ObjectType: strcase.ToCamel(sqlTable.Name),
+		IsArray:    true,
+		Nullable:   true,
+		Arguments: []GraphqlArgument{
+			GraphqlArgument{
+				Name:     "first",
+				Type:     ScalarInt,
+				Nullable: true,
+			},
+
+			GraphqlArgument{
+				Name:     "offset",
+				Type:     ScalarInt,
+				Nullable: true,
+			},
+		},
+	})
+	queryFields = append(queryFields, GraphqlField{
+		Name:       strcase.ToLowerCamel(sqlTable.Name),
+		Type:       ObjectType,
+		ObjectType: strcase.ToCamel(sqlTable.Name),
+		IsArray:    false,
+		Nullable:   true,
+		Arguments: []GraphqlArgument{
+			GraphqlArgument{
+				Name:     fmt.Sprintf("%s_id", sqlTable.Name),
+				Type:     ScalarID,
+				Nullable: false,
+			},
+		},
+	})
+	return queryFields
 }
