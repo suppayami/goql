@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/jinzhu/inflection"
+
 	"github.com/iancoleman/strcase"
 )
 
@@ -125,7 +127,9 @@ func (gql GraphqlObjectType) String() string {
 
 // GraphqlSchema describes Graphql schema
 type GraphqlSchema struct {
-	ObjectTypes []GraphqlObjectType
+	QueryType    GraphqlObjectType
+	MutationType GraphqlObjectType
+	ObjectTypes  []GraphqlObjectType
 }
 
 func (gql GraphqlSchema) String() string {
@@ -202,6 +206,9 @@ func sqlToGraphqlObjectType(sqlTable *SQLTableStruct) GraphqlObjectType {
 				IsArray:    sqlRelationship.HasMany,
 				Nullable:   sqlRelationship.Null,
 			}
+			if field.IsArray {
+				field.Name = inflection.Plural(field.Name)
+			}
 			objectType.Fields = append(objectType.Fields, field)
 			continue
 		}
@@ -210,7 +217,7 @@ func sqlToGraphqlObjectType(sqlTable *SQLTableStruct) GraphqlObjectType {
 				continue
 			}
 			field := GraphqlField{
-				Name:       strcase.ToLowerCamel(manyToMany.Table.Name),
+				Name:       inflection.Plural(strcase.ToLowerCamel(manyToMany.Table.Name)),
 				Type:       ObjectType,
 				ObjectType: strcase.ToCamel(manyToMany.Table.Name),
 				IsArray:    true,

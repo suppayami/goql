@@ -10,7 +10,7 @@ import (
 )
 
 func main() {
-	db, err := sql.Open("mysql", "root:12345678@/manga")
+	db, err := sql.Open("mysql", "root:12345678@/sakila")
 	if err != nil {
 		log.Fatal(err)
 	}
