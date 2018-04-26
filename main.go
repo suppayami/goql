@@ -22,5 +22,5 @@ func main() {
 	}
 	// spew.Dump(sqlSchema)
 	graphqlSchema, err := schema.SQLToGraphqlSchema(sqlSchema)
-	fmt.Println(graphqlSchema.String())
+	fmt.Println(graphqlSchema)
 }

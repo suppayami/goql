@@ -139,10 +139,12 @@ type GraphqlSchema struct {
 func (gql GraphqlSchema) String() string {
 	objectTypes := make([]string, 0, len(gql.ObjectTypes))
 	objectTypes = append(objectTypes, gql.QueryType.String())
+	objectTypes = append(objectTypes, gql.MutationType.String())
 	for _, objectType := range gql.ObjectTypes {
 		objectTypes = append(objectTypes, objectType.String())
 	}
-	return strings.Join(objectTypes, "\n\n")
+	schemaTxt := fmt.Sprintf("%s {\n\tquery: Query\n\tmutation: Mutation\n}\n\n", KeywordSchema)
+	return fmt.Sprintf("%s%s", schemaTxt, strings.Join(objectTypes, "\n\n"))
 }
 
 // SQLToGraphqlSchema converts SQL Schema to Graphql Schema
@@ -153,7 +155,7 @@ func SQLToGraphqlSchema(sqlSchema SQLSchemaStruct) (GraphqlSchema, error) {
 			Fields: []GraphqlField{},
 		},
 		MutationType: GraphqlObjectType{
-			Name:   "Muation",
+			Name:   "Mutation",
 			Fields: []GraphqlField{},
 		},
 		ObjectTypes: []GraphqlObjectType{},
@@ -255,19 +257,19 @@ func sqlToGraphqlQueryFields(sqlTable *SQLTableStruct) []GraphqlField {
 		ObjectType: strcase.ToCamel(sqlTable.Name),
 		IsArray:    true,
 		Nullable:   true,
-		Arguments: []GraphqlArgument{
-			GraphqlArgument{
-				Name:     "first",
-				Type:     ScalarInt,
-				Nullable: true,
-			},
+		// Arguments: []GraphqlArgument{
+		// 	GraphqlArgument{
+		// 		Name:     "first",
+		// 		Type:     ScalarInt,
+		// 		Nullable: true,
+		// 	},
 
-			GraphqlArgument{
-				Name:     "offset",
-				Type:     ScalarInt,
-				Nullable: true,
-			},
-		},
+		// 	GraphqlArgument{
+		// 		Name:     "offset",
+		// 		Type:     ScalarInt,
+		// 		Nullable: true,
+		// 	},
+		// },
 	})
 	queryFields = append(queryFields, GraphqlField{
 		Name:       strcase.ToLowerCamel(sqlTable.Name),
