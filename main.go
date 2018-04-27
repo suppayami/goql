@@ -2,8 +2,11 @@ package main
 
 import (
 	"database/sql"
+	"flag"
+	"fmt"
 	"log"
 	"net/http"
+	"os"
 
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/graphql-go/handler"
@@ -26,16 +29,33 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	schema, err := resolver.BuildSchema(sqlSchema, graphqlSchema)
-	if err != nil {
-		log.Fatal(err)
+
+	exportGraphQL := flag.Bool("e", false, "Export graphql?")
+	serveGraphQL := flag.Bool("s", false, "Serve graphql?")
+
+	flag.Parse()
+
+	if *exportGraphQL {
+		fmt.Println(graphqlSchema)
 	}
-	h := handler.New(&handler.Config{
-		Schema:   schema,
-		Pretty:   true,
-		GraphiQL: true,
-	})
-	// fmt.Println(graphqlSchema)
-	http.Handle("/", h)
-	log.Fatal(http.ListenAndServe(":8080", nil))
+
+	if *serveGraphQL {
+		schema, err := resolver.BuildSchema(sqlSchema, graphqlSchema)
+		if err != nil {
+			log.Fatal(err)
+		}
+		h := handler.New(&handler.Config{
+			Schema:   schema,
+			Pretty:   true,
+			GraphiQL: true,
+		})
+		// fmt.Println(graphqlSchema)
+		http.Handle("/", h)
+		log.Fatal(http.ListenAndServe(":8080", nil))
+	}
+
+	if !*exportGraphQL && !*serveGraphQL {
+		flag.PrintDefaults()
+		os.Exit(1)
+	}
 }

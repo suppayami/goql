@@ -1,6 +1,6 @@
 # goql
 
-## Test Database
-MySQL dump in `test-data`
+## Usage
+`go run main.go -e > schema.graphql` - Export GraphQL schema to file
 
-For now, sample db: https://dev.mysql.com/doc/sakila/en/
+`go run main.go -s` - Serve resolver
