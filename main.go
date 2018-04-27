@@ -35,6 +35,7 @@ func main() {
 		Pretty:   true,
 		GraphiQL: true,
 	})
+	// fmt.Println(graphqlSchema)
 	http.Handle("/", h)
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }
