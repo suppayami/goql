@@ -119,6 +119,7 @@ func (gql GraphqlArgument) String() string {
 type GraphqlObjectType struct {
 	Name   string
 	Fields []GraphqlField
+	Reader func(map[string]interface{}) []map[string]string
 }
 
 func (gql GraphqlObjectType) String() string {
@@ -197,6 +198,7 @@ func sqlToGraphqlObjectType(sqlTable *SQLTableStruct) GraphqlObjectType {
 	objectType := GraphqlObjectType{
 		Name:   strcase.ToCamel(sqlTable.Name),
 		Fields: []GraphqlField{},
+		Reader: sqlTable.Reader,
 	}
 
 	for _, sqlField := range sqlTable.Fields {
@@ -249,6 +251,8 @@ func sqlToGraphqlObjectType(sqlTable *SQLTableStruct) GraphqlObjectType {
 	return objectType
 }
 
+// FIXME: ObjectType should be GraphQL Object Type Name. This can be done by making a function
+// to handle naming convention.
 func sqlToGraphqlQueryFields(sqlTable *SQLTableStruct) []GraphqlField {
 	queryFields := []GraphqlField{}
 	queryFields = append(queryFields, GraphqlField{
