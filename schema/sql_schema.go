@@ -88,7 +88,7 @@ func setupRelationships(tableList []*SQLTableStruct, table *SQLTableStruct) {
 		if !IsKey(*field) {
 			continue
 		}
-		modelName := strings.TrimSuffix(field.Field, sqlIDSuffix)
+		modelName := TableName(field.Field)
 		if strings.EqualFold(table.Name, modelName) {
 			continue
 		}

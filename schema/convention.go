@@ -31,6 +31,11 @@ func PrimaryKey(sqlTable SQLTableStruct) string {
 	return fmt.Sprintf("%s%s", sqlTable.Name, sqlIDSuffix)
 }
 
+// TableName returns table name from key name
+func TableName(key string) string {
+	return strings.TrimSuffix(key, sqlIDSuffix)
+}
+
 // SQLToGraphqlFieldName returns case for graphql field
 func SQLToGraphqlFieldName(fieldName string) string {
 	return strcase.ToLowerCamel(fieldName)
