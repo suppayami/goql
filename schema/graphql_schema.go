@@ -221,7 +221,7 @@ func sqlToGraphqlObjectType(sqlTable *SQLTableStruct) GraphqlObjectType {
 			gqlType = ScalarID
 		}
 		field := GraphqlField{
-			Name:     strcase.ToLowerCamel(sqlField.Field),
+			Name:     SQLToGraphqlFieldName(sqlField.Field),
 			Type:     gqlType,
 			IsArray:  false,
 			Nullable: sqlField.Null,
@@ -232,9 +232,9 @@ func sqlToGraphqlObjectType(sqlTable *SQLTableStruct) GraphqlObjectType {
 	for _, sqlRelationship := range sqlTable.Relationships {
 		if !sqlRelationship.Table.IsManyToMany {
 			field := GraphqlField{
-				Name:       strcase.ToLowerCamel(sqlRelationship.Table.Name),
+				Name:       SQLToGraphqlFieldName(sqlRelationship.Table.Name),
 				Type:       ObjectType,
-				ObjectType: strcase.ToCamel(sqlRelationship.Table.Name),
+				ObjectType: SQLToGraphqlObjectName(sqlRelationship.Table.Name),
 				IsArray:    sqlRelationship.HasMany,
 				Nullable:   sqlRelationship.Null,
 				LocalKey:   sqlRelationship.LocalKey,
@@ -250,9 +250,9 @@ func sqlToGraphqlObjectType(sqlTable *SQLTableStruct) GraphqlObjectType {
 				continue
 			}
 			field := GraphqlField{
-				Name:       inflection.Plural(strcase.ToLowerCamel(manyToMany.Table.Name)),
+				Name:       inflection.Plural(SQLToGraphqlFieldName(manyToMany.Table.Name)),
 				Type:       ObjectType,
-				ObjectType: strcase.ToCamel(manyToMany.Table.Name),
+				ObjectType: SQLToGraphqlObjectName(manyToMany.Table.Name),
 				IsArray:    true,
 				Nullable:   true,
 			}
@@ -268,35 +268,34 @@ func sqlToGraphqlObjectType(sqlTable *SQLTableStruct) GraphqlObjectType {
 func sqlToGraphqlQueryFields(sqlTable *SQLTableStruct) []GraphqlField {
 	queryFields := []GraphqlField{}
 	queryFields = append(queryFields, GraphqlField{
-		Name:       inflection.Plural(strcase.ToLowerCamel(sqlTable.Name)),
+		Name:       inflection.Plural(SQLToGraphqlFieldName(sqlTable.Name)),
 		Type:       ObjectType,
-		ObjectType: strcase.ToCamel(sqlTable.Name),
+		ObjectType: SQLToGraphqlObjectName(sqlTable.Name),
 		IsArray:    true,
 		Nullable:   true,
-		// Arguments: []GraphqlArgument{
-		// 	GraphqlArgument{
-		// 		Name:     "first",
-		// 		Type:     ScalarInt,
-		// 		Nullable: true,
-		// 	},
+		Arguments: []GraphqlArgument{
+			GraphqlArgument{
+				Name:     "first",
+				Type:     ScalarInt,
+				Nullable: true,
+			},
 
-		// 	GraphqlArgument{
-		// 		Name:     "offset",
-		// 		Type:     ScalarInt,
-		// 		Nullable: true,
-		// 	},
-		// },
+			GraphqlArgument{
+				Name:     "offset",
+				Type:     ScalarInt,
+				Nullable: true,
+			},
+		},
 	})
 	queryFields = append(queryFields, GraphqlField{
-		Name:       strcase.ToLowerCamel(sqlTable.Name),
+		Name:       SQLToGraphqlFieldName(sqlTable.Name),
 		Type:       ObjectType,
-		ObjectType: strcase.ToCamel(sqlTable.Name),
+		ObjectType: SQLToGraphqlObjectName(sqlTable.Name),
 		IsArray:    false,
 		Nullable:   true,
 		Arguments: []GraphqlArgument{
 			GraphqlArgument{
-				// FIXME: convention naming in a new func
-				Name:     fmt.Sprintf("%s_id", sqlTable.Name),
+				Name:     PrimaryKey(*sqlTable),
 				Type:     ScalarID,
 				Nullable: false,
 			},

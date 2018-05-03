@@ -91,10 +91,10 @@ func BuildSQLSchema(db *sql.DB, builder SQLSchemaBuilder) (SQLSchemaStruct, erro
 func setupRelationships(tableList []*SQLTableStruct, table *SQLTableStruct) {
 	for i := range table.Fields {
 		field := table.Fields[i]
-		if !strings.HasSuffix(field.Field, "_id") {
+		if !IsKey(*field) {
 			continue
 		}
-		modelName := strings.TrimSuffix(field.Field, "_id")
+		modelName := strings.TrimSuffix(field.Field, sqlIDSuffix)
 		if strings.EqualFold(table.Name, modelName) {
 			continue
 		}
