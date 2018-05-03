@@ -263,8 +263,6 @@ func sqlToGraphqlObjectType(sqlTable *SQLTableStruct) GraphqlObjectType {
 	return objectType
 }
 
-// FIXME: ObjectType should be GraphQL Object Type Name. This can be done by making a function
-// to handle naming convention.
 func sqlToGraphqlQueryFields(sqlTable *SQLTableStruct) []GraphqlField {
 	queryFields := []GraphqlField{}
 	queryFields = append(queryFields, GraphqlField{

@@ -5,8 +5,6 @@ import (
 	"fmt"
 	"log"
 	"strings"
-
-	"github.com/iancoleman/strcase"
 )
 
 // SQLSchemaBuilder queries the database schema and builds it into a readable struct,
@@ -86,8 +84,6 @@ func BuildSQLSchema(db *sql.DB, builder SQLSchemaBuilder) (SQLSchemaStruct, erro
 	return schema, nil
 }
 
-// TODO: Relationship Key should be configurable
-// TODO: LocalKey should be configuration, for now it's the same as ForeignKey
 func setupRelationships(tableList []*SQLTableStruct, table *SQLTableStruct) {
 	for i := range table.Fields {
 		field := table.Fields[i]
@@ -106,13 +102,13 @@ func setupRelationships(tableList []*SQLTableStruct, table *SQLTableStruct) {
 			relForeign := SQLRelationshipStruct{
 				Table:      foundTable,
 				ForeignKey: field.Field,
-				LocalKey:   field.Field,
+				LocalKey:   PrimaryKey(*foundTable),
 				Null:       field.Null,
 			}
 			table.Relationships = append(table.Relationships, &relForeign)
 			relLocal := SQLRelationshipStruct{
 				Table:      table,
-				ForeignKey: field.Field,
+				ForeignKey: PrimaryKey(*foundTable),
 				LocalKey:   field.Field,
 				HasMany:    true,
 				Null:       true,
@@ -173,8 +169,7 @@ func makeReader(db *sql.DB, table *SQLTableStruct) func(map[string]interface{}) 
 			m := make(map[string]string)
 			for i, colName := range cols {
 				val := columnPointers[i].(*sql.NullString)
-				// FIXME: Naming convention in a func
-				m[strcase.ToLowerCamel(colName)] = val.String
+				m[SQLToGraphqlFieldName(colName)] = val.String
 			}
 			rows = append(rows, m)
 		}
