@@ -34,7 +34,6 @@ type SQLTableStruct struct {
 	Fields        []*SQLFieldStruct
 	Relationships []*SQLRelationshipStruct
 	IsManyToMany  bool
-	Reader        func(map[string]interface{}) []map[string]string
 }
 
 // SQLRelationshipStruct describes a relationship between tables.
@@ -78,7 +77,6 @@ func BuildSQLSchema(db *sql.DB, builder SQLSchemaBuilder) (SQLSchemaStruct, erro
 		table.Fields = fields
 		setupRelationships(tables, table)
 		table.IsManyToMany = isManyToManyTable(table)
-		table.Reader = makeReader(db, table)
 		schema.Tables = append(schema.Tables, table)
 	}
 	return schema, nil

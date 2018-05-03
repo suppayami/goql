@@ -50,8 +50,6 @@ type GraphqlField struct {
 	Nullable   bool
 	IsArray    bool
 	Arguments  []GraphqlArgument
-
-	LocalKey string
 }
 
 func (gql GraphqlField) String() string {
@@ -121,10 +119,6 @@ func (gql GraphqlArgument) String() string {
 type GraphqlObjectType struct {
 	Name   string
 	Fields []GraphqlField
-
-	// FIXME: Make these func a type
-	ReadAll       func() []map[string]string
-	ReadByFilters func(map[string]interface{}) []map[string]string
 }
 
 func (gql GraphqlObjectType) String() string {
@@ -203,13 +197,6 @@ func sqlToGraphqlObjectType(sqlTable *SQLTableStruct) GraphqlObjectType {
 	objectType := GraphqlObjectType{
 		Name:   strcase.ToCamel(sqlTable.Name),
 		Fields: []GraphqlField{},
-
-		ReadAll: func() []map[string]string {
-			return sqlTable.Reader(make(map[string]interface{}))
-		},
-		ReadByFilters: func(filter map[string]interface{}) []map[string]string {
-			return sqlTable.Reader(filter)
-		},
 	}
 
 	for _, sqlField := range sqlTable.Fields {
@@ -237,7 +224,6 @@ func sqlToGraphqlObjectType(sqlTable *SQLTableStruct) GraphqlObjectType {
 				ObjectType: SQLToGraphqlObjectName(sqlRelationship.Table.Name),
 				IsArray:    sqlRelationship.HasMany,
 				Nullable:   sqlRelationship.Null,
-				LocalKey:   sqlRelationship.LocalKey,
 			}
 			if field.IsArray {
 				field.Name = inflection.Plural(field.Name)

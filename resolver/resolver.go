@@ -4,8 +4,6 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/iancoleman/strcase"
-
 	"github.com/graphql-go/graphql"
 	"github.com/suppayami/goql/schema"
 )
@@ -39,20 +37,6 @@ func buildObjectTypes(sqlSchema schema.SQLSchemaStruct, graphqlSchema schema.Gra
 			objectType.AddFieldConfig(f.Name, &graphql.Field{
 				Type: getGraphqlType(f, objectTypes),
 				Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-					if obj, ok := p.Source.(map[string]string); ok == true {
-						if f.Type != schema.ObjectType {
-							return obj[f.Name], nil
-						}
-						objectType := getGraphqlObjectType(graphqlSchema, f.ObjectType)
-						// FIXME: NAMING CONVENTION !!!!
-						m := make(map[string]interface{})
-						m[f.LocalKey] = obj[strcase.ToLowerCamel(f.LocalKey)]
-						results := objectType.ReadByFilters(m)
-						if f.IsArray {
-							return results, nil
-						}
-						return results[0], nil
-					}
 					return nil, nil
 				},
 			})
@@ -75,10 +59,6 @@ func buildQueryType(
 		rootQuery.AddFieldConfig(qf.Name, &graphql.Field{
 			Type: getGraphqlType(qf, objectTypes),
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-				objectType := getGraphqlObjectType(graphqlSchema, qf.ObjectType)
-				if len(qf.Arguments) == 0 {
-					return objectType.ReadAll(), nil
-				}
 				return nil, nil
 			},
 		})
