@@ -6,7 +6,7 @@ import (
 
 	"github.com/jinzhu/inflection"
 
-	"github.com/iancoleman/strcase"
+	"github.com/hungneox/stringutils"
 )
 
 // GraphqlType is a type in GraphQL
@@ -195,7 +195,7 @@ func sqlToGraphqlType(sqlType string) GraphqlType {
 
 func sqlToGraphqlObjectType(sqlTable *SQLTableStruct) GraphqlObjectType {
 	objectType := GraphqlObjectType{
-		Name:   strcase.ToCamel(sqlTable.Name),
+		Name:   stringutils.PascalCase(sqlTable.Name),
 		Fields: []GraphqlField{},
 	}
 

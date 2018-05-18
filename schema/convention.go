@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/iancoleman/strcase"
+	"github.com/hungneox/stringutils"
 )
 
 const (
@@ -38,20 +38,20 @@ func TableName(key string) string {
 
 // SQLToGraphqlFieldName returns case for graphql field
 func SQLToGraphqlFieldName(fieldName string) string {
-	return strcase.ToLowerCamel(fieldName)
+	return stringutils.CamelCase(fieldName)
 }
 
 // GraphqlToSQLFieldName returns case for sql field
 func GraphqlToSQLFieldName(fieldName string) string {
-	return strcase.ToSnake(fieldName)
+	return stringutils.SnakeCase(fieldName)
 }
 
 // SQLToGraphqlObjectName returns case for graphql object
 func SQLToGraphqlObjectName(tableName string) string {
-	return strcase.ToCamel(tableName)
+	return stringutils.PascalCase(tableName)
 }
 
 // GraphqlToSQLTableName returns case for sql table
 func GraphqlToSQLTableName(objectName string) string {
-	return strcase.ToSnake(objectName)
+	return stringutils.PascalCase(objectName)
 }
