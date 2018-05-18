@@ -123,9 +123,9 @@ DROP TABLE IF EXISTS `genre`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
  SET character_set_client = utf8mb4 ;
 CREATE TABLE `genre` (
-  `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
-  `genre` text,
-  PRIMARY KEY (`id`)
+  `genre_id` int(11) unsigned NOT NULL AUTO_INCREMENT,
+  `name` text,
+  PRIMARY KEY (`genre_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -196,4 +196,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2018-05-18 12:38:06
+-- Dump completed on 2018-05-18 15:36:41
