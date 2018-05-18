@@ -3,6 +3,8 @@ package schema
 import (
 	"fmt"
 	"strings"
+
+	"github.com/jinzhu/inflection"
 )
 
 // GraphqlType is a type in GraphQL
