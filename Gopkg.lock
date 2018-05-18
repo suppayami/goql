@@ -39,28 +39,13 @@
 
 [[projects]]
   branch = "master"
-  name = "github.com/iancoleman/strcase"
-  packages = ["."]
-  revision = "d19238534019cf63623986540a3b6d557d4b4b42"
-
-[[projects]]
-  branch = "master"
   name = "github.com/jinzhu/inflection"
   packages = ["."]
   revision = "04140366298a54a039076d798123ffa108fff46c"
 
-[[projects]]
-  branch = "master"
-  name = "github.com/suppayami/goql"
-  packages = [
-    "resolver",
-    "schema"
-  ]
-  revision = "b4ecb0fced9dc8440b429c57cc09b0687767e5bd"
-
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "76a1ae7e05213a2640964fa4d83159469861a106e39bfb2de2b0a347fc0d7986"
+  inputs-digest = "061867ee618b3f757b8bb0b610c9b15eb155d9d2c5d5f1356c45bc38845f4d78"
   solver-name = "gps-cdcl"
   solver-version = 1
