@@ -87,10 +87,30 @@ func buildQueryType(
 		qf := queryField
 		table := getSQLTable(sqlSchema, schema.GraphqlToSQLTableName(qf.ObjectType))
 		reader := makeReader(db, table)
+		args := graphql.FieldConfigArgument{}
+		for _, argument := range qf.Arguments {
+			gql := schema.GraphqlField{
+				Name:       argument.Name,
+				Nullable:   argument.Nullable,
+				Type:       argument.Type,
+				ObjectType: argument.ObjectType,
+			}
+			args[argument.Name] = &graphql.ArgumentConfig{
+				Type: getGraphqlType(gql, objectTypes),
+			}
+			if argument.Nullable {
+				args[argument.Name].DefaultValue = argument.DefaultValue
+			}
+		}
 		rootQuery.AddFieldConfig(qf.Name, &graphql.Field{
 			Type: getGraphqlType(qf, objectTypes),
+			Args: args,
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-				return reader(make(map[string]interface{})), nil
+				read := reader(p.Args)
+				if qf.IsArray {
+					return read, nil
+				}
+				return read[0], nil
 			},
 		})
 	}

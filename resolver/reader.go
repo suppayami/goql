@@ -19,11 +19,19 @@ func makeReader(db *sql.DB, table *schema.SQLTableStruct) func(map[string]interf
 			if _, ok := value.(string); ok == true {
 				value = fmt.Sprintf("'%v'", value)
 			}
-			whereStatement = append(whereStatement, fmt.Sprintf("%s=%v", key, value))
+			if !strings.EqualFold(key, "first") && !strings.EqualFold(key, "offset") {
+				whereStatement = append(whereStatement, fmt.Sprintf("%s=%v", key, value))
+			}
 		}
 		if len(whereStatement) > 0 {
 			sqlTxt = fmt.Sprintf("%s WHERE", sqlTxt)
 			sqlTxt = fmt.Sprintf("%s %s", sqlTxt, strings.Join(whereStatement, " AND "))
+		}
+		if first, ok := wheres["first"]; ok {
+			sqlTxt = fmt.Sprintf("%s LIMIT %v", sqlTxt, first)
+			if offset, ok := wheres["offset"]; ok {
+				sqlTxt = fmt.Sprintf("%s OFFSET %v", sqlTxt, offset)
+			}
 		}
 		sqlRows, err := db.Query(sqlTxt)
 		if err != nil {
