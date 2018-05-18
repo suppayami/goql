@@ -158,9 +158,9 @@ func SQLToGraphqlSchema(sqlSchema SQLSchemaStruct) (GraphqlSchema, error) {
 	}
 
 	for _, sqlTable := range sqlSchema.Tables {
-		if sqlTable.IsManyToMany {
-			continue
-		}
+		// if sqlTable.IsManyToMany {
+		// 	continue
+		// }
 		objectType := sqlToGraphqlObjectType(sqlTable)
 		queryFields := sqlToGraphqlQueryFields(sqlTable)
 		schema.ObjectTypes = append(schema.ObjectTypes, objectType)
@@ -227,19 +227,19 @@ func sqlToGraphqlObjectType(sqlTable *SQLTableStruct) GraphqlObjectType {
 			objectType.Fields = append(objectType.Fields, field)
 			continue
 		}
-		for _, manyToMany := range sqlRelationship.Table.Relationships {
-			if manyToMany.Table == sqlTable {
-				continue
-			}
-			field := GraphqlField{
-				Name:       ArrayFieldName(SQLToGraphqlFieldName(manyToMany.Table.Name)),
-				Type:       ObjectType,
-				ObjectType: SQLToGraphqlObjectName(manyToMany.Table.Name),
-				IsArray:    true,
-				Nullable:   true,
-			}
-			objectType.Fields = append(objectType.Fields, field)
-		}
+		// for _, manyToMany := range sqlRelationship.Table.Relationships {
+		// 	if manyToMany.Table == sqlTable {
+		// 		continue
+		// 	}
+		// 	field := GraphqlField{
+		// 		Name:       ArrayFieldName(SQLToGraphqlFieldName(manyToMany.Table.Name)),
+		// 		Type:       ObjectType,
+		// 		ObjectType: SQLToGraphqlObjectName(manyToMany.Table.Name),
+		// 		IsArray:    true,
+		// 		Nullable:   true,
+		// 	}
+		// 	objectType.Fields = append(objectType.Fields, field)
+		// }
 	}
 
 	return objectType
