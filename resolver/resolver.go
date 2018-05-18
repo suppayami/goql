@@ -1,6 +1,7 @@
 package resolver
 
 import (
+	"database/sql"
 	"fmt"
 	"strings"
 
@@ -9,10 +10,10 @@ import (
 )
 
 // BuildSchema builds GraphQL handler & resolver
-func BuildSchema(sqlSchema schema.SQLSchemaStruct, graphqlSchema schema.GraphqlSchema) (*graphql.Schema, error) {
-	objectTypes := buildObjectTypes(sqlSchema, graphqlSchema)
+func BuildSchema(db *sql.DB, sqlSchema schema.SQLSchemaStruct, graphqlSchema schema.GraphqlSchema) (*graphql.Schema, error) {
+	objectTypes := buildObjectTypes(db, sqlSchema, graphqlSchema)
 	schema, err := graphql.NewSchema(graphql.SchemaConfig{
-		Query: buildQueryType(sqlSchema, graphqlSchema, objectTypes),
+		Query: buildQueryType(db, sqlSchema, graphqlSchema, objectTypes),
 	})
 	if err != nil {
 		return nil, err
@@ -20,7 +21,11 @@ func BuildSchema(sqlSchema schema.SQLSchemaStruct, graphqlSchema schema.GraphqlS
 	return &schema, nil
 }
 
-func buildObjectTypes(sqlSchema schema.SQLSchemaStruct, graphqlSchema schema.GraphqlSchema) map[string]*graphql.Object {
+func buildObjectTypes(
+	db *sql.DB,
+	sqlSchema schema.SQLSchemaStruct,
+	graphqlSchema schema.GraphqlSchema,
+) map[string]*graphql.Object {
 	objectTypes := make(map[string]*graphql.Object)
 	// init object types
 	for _, gql := range graphqlSchema.ObjectTypes {
@@ -32,11 +37,34 @@ func buildObjectTypes(sqlSchema schema.SQLSchemaStruct, graphqlSchema schema.Gra
 	// setup fields
 	for _, gql := range graphqlSchema.ObjectTypes {
 		objectType := objectTypes[gql.Name]
+		gqlName := gql.Name
 		for _, field := range gql.Fields {
 			f := field
 			objectType.AddFieldConfig(f.Name, &graphql.Field{
 				Type: getGraphqlType(f, objectTypes),
 				Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+					if obj, ok := p.Source.(map[string]string); ok == true {
+						if f.Type != schema.ObjectType {
+							return obj[f.Name], nil
+						}
+
+						// object type
+						table := getSQLTable(sqlSchema, schema.GraphqlToSQLTableName(f.ObjectType))
+						reader := makeReader(db, table)
+						m := make(map[string]interface{})
+						key := ""
+						if f.IsArray {
+							key = schema.PrimaryKey(schema.GraphqlToSQLTableName(gqlName))
+						} else {
+							key = schema.PrimaryKey(table.Name)
+						}
+						m[key] = obj[schema.SQLToGraphqlFieldName(key)]
+						results := reader(m)
+						if f.IsArray {
+							return results, nil
+						}
+						return results[0], nil
+					}
 					return nil, nil
 				},
 			})
@@ -46,6 +74,7 @@ func buildObjectTypes(sqlSchema schema.SQLSchemaStruct, graphqlSchema schema.Gra
 }
 
 func buildQueryType(
+	db *sql.DB,
 	sqlSchema schema.SQLSchemaStruct,
 	graphqlSchema schema.GraphqlSchema,
 	objectTypes map[string]*graphql.Object,
@@ -56,10 +85,12 @@ func buildQueryType(
 	})
 	for _, queryField := range graphqlSchema.QueryType.Fields {
 		qf := queryField
+		table := getSQLTable(sqlSchema, schema.GraphqlToSQLTableName(qf.ObjectType))
+		reader := makeReader(db, table)
 		rootQuery.AddFieldConfig(qf.Name, &graphql.Field{
 			Type: getGraphqlType(qf, objectTypes),
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-				return nil, nil
+				return reader(make(map[string]interface{})), nil
 			},
 		})
 	}
@@ -98,4 +129,13 @@ func getGraphqlObjectType(graphqlSchema schema.GraphqlSchema, objectType string)
 		}
 	}
 	panic(fmt.Sprintf("ObjectType %s is missing", objectType))
+}
+
+func getSQLTable(sqlSchema schema.SQLSchemaStruct, tableName string) *schema.SQLTableStruct {
+	for _, sqlTable := range sqlSchema.Tables {
+		if strings.EqualFold(sqlTable.Name, tableName) {
+			return sqlTable
+		}
+	}
+	panic(fmt.Sprintf("Table %s is missing", tableName))
 }

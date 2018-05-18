@@ -255,15 +255,17 @@ func sqlToGraphqlQueryFields(sqlTable *SQLTableStruct) []GraphqlField {
 		Nullable:   true,
 		Arguments: []GraphqlArgument{
 			GraphqlArgument{
-				Name:     "first",
-				Type:     ScalarInt,
-				Nullable: true,
+				Name:         "first",
+				Type:         ScalarInt,
+				Nullable:     true,
+				DefaultValue: "0",
 			},
 
 			GraphqlArgument{
-				Name:     "offset",
-				Type:     ScalarInt,
-				Nullable: true,
+				Name:         "offset",
+				Type:         ScalarInt,
+				Nullable:     true,
+				DefaultValue: "5",
 			},
 		},
 	})
@@ -275,7 +277,7 @@ func sqlToGraphqlQueryFields(sqlTable *SQLTableStruct) []GraphqlField {
 		Nullable:   true,
 		Arguments: []GraphqlArgument{
 			GraphqlArgument{
-				Name:     PrimaryKey(*sqlTable),
+				Name:     PrimaryKey(sqlTable.Name),
 				Type:     ScalarID,
 				Nullable: false,
 			},

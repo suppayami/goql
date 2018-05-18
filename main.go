@@ -40,7 +40,7 @@ func main() {
 	}
 
 	if *serveGraphQL {
-		schema, err := resolver.BuildSchema(sqlSchema, graphqlSchema)
+		schema, err := resolver.BuildSchema(db, sqlSchema, graphqlSchema)
 		if err != nil {
 			log.Fatal(err)
 		}

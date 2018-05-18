@@ -21,7 +21,7 @@ func makeReader(db *sql.DB, table *schema.SQLTableStruct) func(map[string]interf
 			}
 			whereStatement = append(whereStatement, fmt.Sprintf("%s=%v", key, value))
 		}
-		if len(wheres) > 0 {
+		if len(whereStatement) > 0 {
 			sqlTxt = fmt.Sprintf("%s WHERE", sqlTxt)
 			sqlTxt = fmt.Sprintf("%s %s", sqlTxt, strings.Join(whereStatement, " AND "))
 		}

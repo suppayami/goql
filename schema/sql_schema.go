@@ -100,13 +100,13 @@ func setupRelationships(tableList []*SQLTableStruct, table *SQLTableStruct) {
 			relForeign := SQLRelationshipStruct{
 				Table:      foundTable,
 				ForeignKey: field.Field,
-				LocalKey:   PrimaryKey(*foundTable),
+				LocalKey:   PrimaryKey(foundTable.Name),
 				Null:       field.Null,
 			}
 			table.Relationships = append(table.Relationships, &relForeign)
 			relLocal := SQLRelationshipStruct{
 				Table:      table,
-				ForeignKey: PrimaryKey(*foundTable),
+				ForeignKey: PrimaryKey(foundTable.Name),
 				LocalKey:   field.Field,
 				HasMany:    true,
 				Null:       true,

@@ -29,8 +29,8 @@ func IsKey(sqlField SQLFieldStruct) bool {
 }
 
 // PrimaryKey returns primary key name for table
-func PrimaryKey(sqlTable SQLTableStruct) string {
-	return fmt.Sprintf("%s%s", sqlTable.Name, sqlIDSuffix)
+func PrimaryKey(tableName string) string {
+	return fmt.Sprintf("%s%s", tableName, sqlIDSuffix)
 }
 
 // TableName returns table name from key name
@@ -55,7 +55,7 @@ func SQLToGraphqlObjectName(tableName string) string {
 
 // GraphqlToSQLTableName returns case for sql table
 func GraphqlToSQLTableName(objectName string) string {
-	return stringutils.PascalCase(objectName)
+	return stringutils.SnakeCase(objectName)
 }
 
 // ArrayFieldName returns name for an array field
