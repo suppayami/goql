@@ -5,6 +5,8 @@ import (
 	"strings"
 
 	"github.com/hungneox/stringutils"
+
+	"github.com/jinzhu/inflection"
 )
 
 const (
@@ -54,4 +56,9 @@ func SQLToGraphqlObjectName(tableName string) string {
 // GraphqlToSQLTableName returns case for sql table
 func GraphqlToSQLTableName(objectName string) string {
 	return stringutils.PascalCase(objectName)
+}
+
+// ArrayFieldName returns name for an array field
+func ArrayFieldName(fieldName string) string {
+	return inflection.Plural(fieldName)
 }

@@ -5,8 +5,6 @@ import (
 	"strings"
 
 	"github.com/jinzhu/inflection"
-
-	"github.com/hungneox/stringutils"
 )
 
 // GraphqlType is a type in GraphQL
@@ -195,7 +193,7 @@ func sqlToGraphqlType(sqlType string) GraphqlType {
 
 func sqlToGraphqlObjectType(sqlTable *SQLTableStruct) GraphqlObjectType {
 	objectType := GraphqlObjectType{
-		Name:   stringutils.PascalCase(sqlTable.Name),
+		Name:   SQLToGraphqlObjectName(sqlTable.Name),
 		Fields: []GraphqlField{},
 	}
 
@@ -226,7 +224,7 @@ func sqlToGraphqlObjectType(sqlTable *SQLTableStruct) GraphqlObjectType {
 				Nullable:   sqlRelationship.Null,
 			}
 			if field.IsArray {
-				field.Name = inflection.Plural(field.Name)
+				field.Name = ArrayFieldName(field.Name)
 			}
 			objectType.Fields = append(objectType.Fields, field)
 			continue
@@ -236,7 +234,7 @@ func sqlToGraphqlObjectType(sqlTable *SQLTableStruct) GraphqlObjectType {
 				continue
 			}
 			field := GraphqlField{
-				Name:       inflection.Plural(SQLToGraphqlFieldName(manyToMany.Table.Name)),
+				Name:       ArrayFieldName(SQLToGraphqlFieldName(manyToMany.Table.Name)),
 				Type:       ObjectType,
 				ObjectType: SQLToGraphqlObjectName(manyToMany.Table.Name),
 				IsArray:    true,
@@ -252,7 +250,7 @@ func sqlToGraphqlObjectType(sqlTable *SQLTableStruct) GraphqlObjectType {
 func sqlToGraphqlQueryFields(sqlTable *SQLTableStruct) []GraphqlField {
 	queryFields := []GraphqlField{}
 	queryFields = append(queryFields, GraphqlField{
-		Name:       inflection.Plural(SQLToGraphqlFieldName(sqlTable.Name)),
+		Name:       ArrayFieldName(SQLToGraphqlFieldName(sqlTable.Name)),
 		Type:       ObjectType,
 		ObjectType: SQLToGraphqlObjectName(sqlTable.Name),
 		IsArray:    true,
