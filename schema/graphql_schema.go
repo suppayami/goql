@@ -163,9 +163,13 @@ func SQLToGraphqlSchema(sqlSchema SQLSchemaStruct) (GraphqlSchema, error) {
 		// }
 		objectType := sqlToGraphqlObjectType(sqlTable)
 		queryFields := sqlToGraphqlQueryFields(sqlTable)
+		mutationFields := sqlToGraphqlMutationFields(sqlTable)
 		schema.ObjectTypes = append(schema.ObjectTypes, objectType)
 		for _, queryField := range queryFields {
 			schema.QueryType.Fields = append(schema.QueryType.Fields, queryField)
+		}
+		for _, mutationField := range mutationFields {
+			schema.MutationType.Fields = append(schema.MutationType.Fields, mutationField)
 		}
 	}
 
@@ -279,7 +283,7 @@ func sqlToGraphqlQueryFields(sqlTable *SQLTableStruct) []GraphqlField {
 	if !sqlTable.IsManyToMany {
 		singleQueryField.Arguments = []GraphqlArgument{
 			GraphqlArgument{
-				Name:     PrimaryKey(sqlTable.Name),
+				Name:     SQLToGraphqlFieldName(PrimaryKey(sqlTable.Name)),
 				Type:     ScalarID,
 				Nullable: false,
 			},
@@ -288,7 +292,7 @@ func sqlToGraphqlQueryFields(sqlTable *SQLTableStruct) []GraphqlField {
 		args := make([]GraphqlArgument, 0, len(sqlTable.Relationships))
 		for _, relationship := range sqlTable.Relationships {
 			args = append(args, GraphqlArgument{
-				Name:     relationship.ForeignKey,
+				Name:     SQLToGraphqlFieldName(relationship.ForeignKey),
 				Type:     ScalarID,
 				Nullable: true,
 			})
@@ -298,4 +302,29 @@ func sqlToGraphqlQueryFields(sqlTable *SQLTableStruct) []GraphqlField {
 	}
 	queryFields = append(queryFields, singleQueryField)
 	return queryFields
+}
+
+func sqlToGraphqlMutationFields(sqlTable *SQLTableStruct) []GraphqlField {
+	mutationFields := []GraphqlField{}
+	args := make([]GraphqlArgument, 0, len(sqlTable.Fields)-1)
+	for _, field := range sqlTable.Fields {
+		if IsPrimaryKey(*sqlTable, *field) {
+			continue
+		}
+		args = append(args, GraphqlArgument{
+			Name:     SQLToGraphqlFieldName(field.Field),
+			Type:     sqlToGraphqlType(field.Type),
+			Nullable: false,
+		})
+	}
+	createField := GraphqlField{
+		Name:       SQLToGraphqlCreateFieldName(sqlTable.Name),
+		Type:       ObjectType,
+		ObjectType: SQLToGraphqlObjectName(sqlTable.Name),
+		IsArray:    false,
+		Nullable:   true,
+		Arguments:  args,
+	}
+	mutationFields = append(mutationFields, createField)
+	return mutationFields
 }

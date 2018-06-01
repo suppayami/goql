@@ -16,6 +16,7 @@ func makeReader(db *sql.DB, table *schema.SQLTableStruct) func(map[string]interf
 		rows := make([]map[string]string, 0)
 		sqlTxt = fmt.Sprintf("SELECT * FROM %s", table.Name)
 		for key, value := range wheres {
+			key = schema.GraphqlToSQLFieldName(key)
 			if len(fmt.Sprintf("%v", value)) == 0 {
 				continue
 			}

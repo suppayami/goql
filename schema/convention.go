@@ -43,6 +43,11 @@ func SQLToGraphqlFieldName(fieldName string) string {
 	return stringutils.CamelCase(fieldName)
 }
 
+// SQLToGraphqlCreateFieldName returns case for Create field in mutation
+func SQLToGraphqlCreateFieldName(fieldName string) string {
+	return fmt.Sprintf("create%s", stringutils.PascalCase(fieldName))
+}
+
 // GraphqlToSQLFieldName returns case for sql field
 func GraphqlToSQLFieldName(fieldName string) string {
 	return stringutils.SnakeCase(fieldName)

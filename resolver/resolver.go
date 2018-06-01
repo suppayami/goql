@@ -13,7 +13,8 @@ import (
 func BuildSchema(db *sql.DB, sqlSchema schema.SQLSchemaStruct, graphqlSchema schema.GraphqlSchema) (*graphql.Schema, error) {
 	objectTypes := buildObjectTypes(db, sqlSchema, graphqlSchema)
 	schema, err := graphql.NewSchema(graphql.SchemaConfig{
-		Query: buildQueryType(db, sqlSchema, graphqlSchema, objectTypes),
+		Query:    buildQueryType(db, sqlSchema, graphqlSchema, objectTypes),
+		Mutation: buildMutationType(db, sqlSchema, graphqlSchema, objectTypes),
 	})
 	if err != nil {
 		return nil, err
@@ -115,6 +116,52 @@ func buildQueryType(
 		})
 	}
 	return rootQuery
+}
+
+func buildMutationType(
+	db *sql.DB,
+	sqlSchema schema.SQLSchemaStruct,
+	graphqlSchema schema.GraphqlSchema,
+	objectTypes map[string]*graphql.Object,
+) *graphql.Object {
+	rootMutation := graphql.NewObject(graphql.ObjectConfig{
+		Name:   graphqlSchema.MutationType.Name,
+		Fields: graphql.Fields{},
+	})
+	for _, mutationField := range graphqlSchema.MutationType.Fields {
+		mf := mutationField
+		table := getSQLTable(sqlSchema, schema.GraphqlToSQLTableName(mf.ObjectType))
+		creator := makeCreator(db, table)
+		args := graphql.FieldConfigArgument{}
+		for _, argument := range mf.Arguments {
+			gql := schema.GraphqlField{
+				Name:       argument.Name,
+				Nullable:   argument.Nullable,
+				Type:       argument.Type,
+				ObjectType: argument.ObjectType,
+			}
+			args[argument.Name] = &graphql.ArgumentConfig{
+				Type: getGraphqlType(gql, objectTypes),
+			}
+			if argument.Nullable {
+				args[argument.Name].DefaultValue = argument.DefaultValue
+			}
+		}
+		rootMutation.AddFieldConfig(mf.Name, &graphql.Field{
+			Type: getGraphqlType(mf, objectTypes),
+			Args: args,
+			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+				insertedID := creator(p.Args)
+				created := make(map[string]string)
+				for k, v := range p.Args {
+					created[k] = fmt.Sprintf("%v", v)
+				}
+				created[schema.SQLToGraphqlFieldName(schema.PrimaryKey(table.Name))] = fmt.Sprintf("%v", insertedID)
+				return created, nil
+			},
+		})
+	}
+	return rootMutation
 }
 
 func getGraphqlType(gql schema.GraphqlField, objectTypes map[string]*graphql.Object) graphql.Output {
