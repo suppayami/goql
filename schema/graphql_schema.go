@@ -258,30 +258,49 @@ func sqlToGraphqlQueryFields(sqlTable *SQLTableStruct) []GraphqlField {
 				Name:         "first",
 				Type:         ScalarInt,
 				Nullable:     true,
-				DefaultValue: "0",
+				DefaultValue: "10",
 			},
 
 			GraphqlArgument{
 				Name:         "offset",
 				Type:         ScalarInt,
 				Nullable:     true,
-				DefaultValue: "5",
+				DefaultValue: "0",
 			},
 		},
 	})
-	queryFields = append(queryFields, GraphqlField{
-		Name:       SQLToGraphqlFieldName(sqlTable.Name),
-		Type:       ObjectType,
-		ObjectType: SQLToGraphqlObjectName(sqlTable.Name),
-		IsArray:    false,
-		Nullable:   true,
-		Arguments: []GraphqlArgument{
-			GraphqlArgument{
-				Name:     PrimaryKey(sqlTable.Name),
+	if !sqlTable.IsManyToMany {
+		queryFields = append(queryFields, GraphqlField{
+			Name:       SQLToGraphqlFieldName(sqlTable.Name),
+			Type:       ObjectType,
+			ObjectType: SQLToGraphqlObjectName(sqlTable.Name),
+			IsArray:    false,
+			Nullable:   true,
+			Arguments: []GraphqlArgument{
+				GraphqlArgument{
+					Name:     PrimaryKey(sqlTable.Name),
+					Type:     ScalarID,
+					Nullable: false,
+				},
+			},
+		})
+	} else {
+		args := make([]GraphqlArgument, 0, len(sqlTable.Relationships))
+		for _, relationship := range sqlTable.Relationships {
+			args = append(args, GraphqlArgument{
+				Name:     relationship.ForeignKey,
 				Type:     ScalarID,
-				Nullable: false,
-			},
-		},
-	})
+				Nullable: true,
+			})
+		}
+		queryFields = append(queryFields, GraphqlField{
+			Name:       SQLToGraphqlFieldName(sqlTable.Name),
+			Type:       ObjectType,
+			ObjectType: SQLToGraphqlObjectName(sqlTable.Name),
+			IsArray:    true,
+			Nullable:   true,
+			Arguments:  args,
+		})
+	}
 	return queryFields
 }

@@ -16,6 +16,9 @@ func makeReader(db *sql.DB, table *schema.SQLTableStruct) func(map[string]interf
 		rows := make([]map[string]string, 0)
 		sqlTxt = fmt.Sprintf("SELECT * FROM %s", table.Name)
 		for key, value := range wheres {
+			if len(fmt.Sprintf("%v", value)) == 0 {
+				continue
+			}
 			if _, ok := value.(string); ok == true {
 				value = fmt.Sprintf("'%v'", value)
 			}
@@ -33,6 +36,7 @@ func makeReader(db *sql.DB, table *schema.SQLTableStruct) func(map[string]interf
 				sqlTxt = fmt.Sprintf("%s OFFSET %v", sqlTxt, offset)
 			}
 		}
+		fmt.Println(sqlTxt)
 		sqlRows, err := db.Query(sqlTxt)
 		if err != nil {
 			log.Fatal(err)
