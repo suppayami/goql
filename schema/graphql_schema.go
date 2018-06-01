@@ -269,21 +269,21 @@ func sqlToGraphqlQueryFields(sqlTable *SQLTableStruct) []GraphqlField {
 			},
 		},
 	})
+	singleQueryField := GraphqlField{
+		Name:       SQLToGraphqlFieldName(sqlTable.Name),
+		Type:       ObjectType,
+		ObjectType: SQLToGraphqlObjectName(sqlTable.Name),
+		IsArray:    false,
+		Nullable:   true,
+	}
 	if !sqlTable.IsManyToMany {
-		queryFields = append(queryFields, GraphqlField{
-			Name:       SQLToGraphqlFieldName(sqlTable.Name),
-			Type:       ObjectType,
-			ObjectType: SQLToGraphqlObjectName(sqlTable.Name),
-			IsArray:    false,
-			Nullable:   true,
-			Arguments: []GraphqlArgument{
-				GraphqlArgument{
-					Name:     PrimaryKey(sqlTable.Name),
-					Type:     ScalarID,
-					Nullable: false,
-				},
+		singleQueryField.Arguments = []GraphqlArgument{
+			GraphqlArgument{
+				Name:     PrimaryKey(sqlTable.Name),
+				Type:     ScalarID,
+				Nullable: false,
 			},
-		})
+		}
 	} else {
 		args := make([]GraphqlArgument, 0, len(sqlTable.Relationships))
 		for _, relationship := range sqlTable.Relationships {
@@ -293,14 +293,9 @@ func sqlToGraphqlQueryFields(sqlTable *SQLTableStruct) []GraphqlField {
 				Nullable: true,
 			})
 		}
-		queryFields = append(queryFields, GraphqlField{
-			Name:       SQLToGraphqlFieldName(sqlTable.Name),
-			Type:       ObjectType,
-			ObjectType: SQLToGraphqlObjectName(sqlTable.Name),
-			IsArray:    true,
-			Nullable:   true,
-			Arguments:  args,
-		})
+		singleQueryField.IsArray = true
+		singleQueryField.Arguments = args
 	}
+	queryFields = append(queryFields, singleQueryField)
 	return queryFields
 }

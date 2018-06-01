@@ -36,7 +36,6 @@ func makeReader(db *sql.DB, table *schema.SQLTableStruct) func(map[string]interf
 				sqlTxt = fmt.Sprintf("%s OFFSET %v", sqlTxt, offset)
 			}
 		}
-		fmt.Println(sqlTxt)
 		sqlRows, err := db.Query(sqlTxt)
 		if err != nil {
 			log.Fatal(err)
