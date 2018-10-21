@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"flag"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
@@ -12,10 +13,42 @@ import (
 	"github.com/graphql-go/handler"
 	"github.com/suppayami/goql/resolver"
 	"github.com/suppayami/goql/schema"
+	yaml "gopkg.in/yaml.v2"
 )
 
+type env struct {
+	Host     string `yaml:"host"`
+	Port     string `yaml:"port"`
+	Username string `yaml:"username"`
+	Password string `yaml:"password"`
+	Database string `yaml:"database"`
+}
+
+func (e *env) readEnv() *env {
+
+	yamlFile, err := ioutil.ReadFile("env.yml")
+
+	if err != nil {
+		log.Printf("yamlFile.Get err   #%v ", err)
+	}
+
+	err = yaml.Unmarshal(yamlFile, e)
+
+	if err != nil {
+		log.Fatalf("Unmarshal: %v", err)
+	}
+
+	return e
+}
+
 func main() {
-	db, err := sql.Open("mysql", "root:12345678@/games")
+	var e env
+
+	e.readEnv()
+
+	// TODO: Auto detect database server (mysql|postgres)
+	db, err := sql.Open("mysql", fmt.Sprintf("%s:%s@(%s:%s)/%s", e.Username, e.Password, e.Host, e.Port, e.Database))
+
 	if err != nil {
 		log.Fatal(err)
 	}
