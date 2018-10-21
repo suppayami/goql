@@ -26,7 +26,7 @@ type env struct {
 
 func (e *env) readEnv() *env {
 
-	yamlFile, err := ioutil.ReadFile("env.yml")
+	yamlFile, err := ioutil.ReadFile("env.yaml")
 
 	if err != nil {
 		log.Printf("yamlFile.Get err   #%v ", err)
