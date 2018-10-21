@@ -45,10 +45,6 @@
   branch = "master"
   name = "github.com/jinzhu/inflection"
 
-[[constraint]]
-  branch = "master"
-  name = "github.com/suppayami/goql"
-
 [prune]
   go-tests = true
   unused-packages = true

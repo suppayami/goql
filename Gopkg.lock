@@ -4,8 +4,8 @@
 [[projects]]
   name = "github.com/go-sql-driver/mysql"
   packages = ["."]
-  revision = "a0583e0143b1624142adab07e0e97fe106d99561"
-  version = "v1.3.0"
+  revision = "d523deb1b23d913de5bdada721a6071e71283618"
+  version = "v1.4.0"
 
 [[projects]]
   name = "github.com/graphql-go/graphql"
@@ -22,8 +22,8 @@
     "language/typeInfo",
     "language/visitor"
   ]
-  revision = "1e23489041ba90a66f317fe0deccb236a2fff3cb"
-  version = "v0.7.5"
+  revision = "5c1be0872a56fba73b279434ea95dfda735abedd"
+  version = "v0.7.6"
 
 [[projects]]
   name = "github.com/graphql-go/handler"
@@ -43,9 +43,21 @@
   packages = ["."]
   revision = "04140366298a54a039076d798123ffa108fff46c"
 
+[[projects]]
+  name = "google.golang.org/appengine"
+  packages = ["cloudsql"]
+  revision = "ae0ab99deb4dc413a2b4bd6c8bdd0eb67f1e4d06"
+  version = "v1.2.0"
+
+[[projects]]
+  name = "gopkg.in/yaml.v2"
+  packages = ["."]
+  revision = "5420a8b6744d3b0345ab293f6fcba19c978f1183"
+  version = "v2.2.1"
+
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "061867ee618b3f757b8bb0b610c9b15eb155d9d2c5d5f1356c45bc38845f4d78"
+  inputs-digest = "aca68d8e2e30083e6a46a2265dd6565798c55db45652c004dda9a8cdd7bbee86"
   solver-name = "gps-cdcl"
   solver-version = 1

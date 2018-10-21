@@ -10,12 +10,19 @@ import (
 
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/graphql-go/handler"
+	"github.com/suppayami/goql/env"
 	"github.com/suppayami/goql/resolver"
 	"github.com/suppayami/goql/schema"
 )
 
 func main() {
-	db, err := sql.Open("mysql", "root:12345678@/games")
+	var e env.Env
+
+	e.ReadEnv()
+
+	// TODO: Auto detect database server (mysql|postgres|mongodb?)
+	db, err := sql.Open("mysql", fmt.Sprintf("%s:%s@(%s:%s)/%s", e.Username, e.Password, e.Host, e.Port, e.Database))
+
 	if err != nil {
 		log.Fatal(err)
 	}
