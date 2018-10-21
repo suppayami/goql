@@ -1,5 +1,5 @@
 # Environment specific files
-.env.yml
+.env.yaml
 
 # Binaries for programs and plugins
 *.exe
